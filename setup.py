@@ -1,12 +1,10 @@
 #!/usr/bin/env python3from codecs import open
 from setuptools import find_packages, setup
 
-from aws_watchdog import __version__
-
 
 setup(
     name='aws_watchdog',
-    version=__version__,
+    version='0.0.1',
     description='',
     url='https://bitbucket.org/toffi9/aws-watchdog',
     author='Mateusz Kamycki',
@@ -23,7 +21,6 @@ setup(
     install_requires=[
         'click==6.7',
         'boto3==1.4.6',
-        'python-daemon==2.1.2',
     ],
     entry_points={
         'console_scripts': [

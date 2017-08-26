@@ -10,7 +10,6 @@ from .utils import (
 )
 
 
-__version__ = '0.0.1'
 __all__ = ['aws_watchdog', 'aws_watchdog_daemon']
 
 
