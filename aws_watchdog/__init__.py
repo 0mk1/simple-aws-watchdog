@@ -3,6 +3,7 @@ import time
 
 import click
 
+from .config import DynamoDBConfig
 from .utils import (
     current_user_is_root,
     is_service_running,
@@ -16,15 +17,6 @@ __all__ = ['aws_watchdog', 'aws_watchdog_daemon']
 logger = logging.getLogger(__name__)
 
 
-test_config = {
-    'Id': 1,
-    'ListOfServices': ['docker', 'ufw'],
-    'NumOfSecCheck': 5,
-    'NumOfSecWait': 5,
-    'NumOfAttempts': 4,
-}
-
-
 def aws_watchdog(config_id):
     """AWS watchdog function. Health check for your services."""
     # TODO: each service checks should be in different process to do thins in
@@ -32,18 +24,15 @@ def aws_watchdog(config_id):
     # TODO: consider selfhealing of aws_watchdog
     # TODO: systemd service
 
-    # TODO: Config class która będzie pobierać z DynamoDb, walidować, wypluwać
-    # nam configi, update co 15minut.
-    # TODO: logowanie do s3 (logging) i do SNS (konkretne zdarzenia - down,
-    # success after, failture after)
-    # TODO: README, instalacje opisać
+    config = DynamoDBConfig(config_id)
+
     while True:
-        for service in test_config['ListOfServices']:
+        for service in config.list_of_services:
 
             if not is_service_running(service):
                 logger.error('{} is down.'.format(service))
 
-                for attempt in range(1, test_config['NumOfAttempts']+1):
+                for attempt in range(1, config.num_of_attempts + 1):
                     logger.info(
                         'Restarting {}. Attempt {}'.format(service, attempt)
                     )
@@ -56,16 +45,16 @@ def aws_watchdog(config_id):
                             )
                         )
                         break
-                    if attempt == test_config['NumOfAttempts']:
+                    if attempt == config.num_of_attempts:
                         logger.error(
                             'Failure of restarting {}. On {} attempt.'.format(
                                 service,
                                 attempt,
                             )
                         )
-                    time.sleep(test_config['NumOfSecWait'])
+                    time.sleep(config.num_of_sec_wait)
 
-        time.sleep(test_config['NumOfSecCheck'])
+        time.sleep(config.num_of_sec_check)
 
 
 @click.command()
@@ -75,6 +64,7 @@ def aws_watchdog(config_id):
     help='ID of config entry in DynamoDB (default is 1)',
 )
 def aws_watchdog_daemon(config_id):
+    # TODO: user can choose where to log
     logger.info(
         'Starting AWS watchdog daemon. (PID )'.format()
     )
