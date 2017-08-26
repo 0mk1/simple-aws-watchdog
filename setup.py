@@ -22,9 +22,7 @@ setup(
         'click==6.7',
         'boto3==1.4.6',
     ],
-    entry_points={
-        'console_scripts': [
-            'aws_watchdog=aws_watchdogd',
-        ],
-    },
+    scripts=[
+        'aws_watchdogd',
+    ],
 )
