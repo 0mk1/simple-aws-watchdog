@@ -7,10 +7,8 @@ Remember that aws_watchdog is working on Python 3+.
 If on system is python 2 and 3, then change `pip` to `pip3`.
 
 
-Install aws_watchdog on user that have permissions to systemctl restart and 
-status commands, and also have access to /var/log/.
-
-TODO: create script that create aws_watchdog user in system.
+Install aws_watchdog on user that have permissions to systemctl restart and
+ status commands, and also have access to /var/log/.
 
 #### PyPi
 
@@ -25,6 +23,11 @@ pip install -r requirements.txt
 ```
 
 ### Usage
+
+Configure your aws credentials by awscli. Remember to set also default region.
+```bash
+aws configure
+```
 
 ```bash
 aws_watchdogd --help

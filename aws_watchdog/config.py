@@ -1,17 +1,18 @@
+import logging
+
 import boto3
+from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
 
 
 class DynamoDBConfig:
 
-    # TODO: do it more flexible
-    table_name = 'mkamycki-watchdog-table'
-
-    # TODO: every 15minutes reload config
-
-    def __init__(self, config_id):
+    def __init__(self, table_name, config_id):
+        self.table_name = table_name
         self.client = boto3.client('dynamodb')
         self._raw_config = self.get_raw_config(config_id)
-        print(self._raw_config)
+        logger.info(self._raw_config)
 
         self.list_of_services = self.get_list_of_services()
         self.num_of_sec_check = self.get_num_of_sec_check()
@@ -19,55 +20,37 @@ class DynamoDBConfig:
         self.num_of_attempts = self.get_num_of_attempts()
 
     def get_raw_config(self, config_id):
-        return self.client.get_item(
-            TableName=self.table_name,
-            # Key={
-            #     'string': {
-            #         'S': 'string',
-            #         'N': 'string',
-            #         'B': b'bytes',
-            #         'SS': [
-            #             'string',
-            #         ],
-            #         'NS': [
-            #             'string',
-            #         ],
-            #         'BS': [
-            #             b'bytes',
-            #         ],
-            #         'M': {
-            #             'string': {'... recursive ...'}
-            #         },
-            #         'L': [
-            #             {'... recursive ...'},
-            #         ],
-            #         'NULL': True|False,
-            #         'BOOL': True|False
-            #     }
-            # },
-            # AttributesToGet=[
-            #     'string',
-            # ],
-            # ConsistentRead=True|False,
-            # ReturnConsumedCapacity='INDEXES'|'TOTAL'|'NONE',
-            # ProjectionExpression='string',
-            # ExpressionAttributeNames={
-            #     'string': 'string'
-            # }
-        )
+        try:
+            return self.client.get_item(
+                TableName=self.table_name,
+                Key={
+                    'id': {
+                        'S': str(config_id),
+                    },
+                },
+            )
+        except ClientError as err:
+            logger.error(err)
+            raise err
 
     def get_list_of_services(self):
-        # TODO: validation
-        return ['ufw', 'docker']
+        item = self.get_item_from_raw_config()
+        services_list = item['ListOfServices']['L']
+
+        return [service_dict['S'] for service_dict in services_list]
 
     def get_num_of_sec_check(self):
-        # TODO: validation
-        return 5
+        item = self.get_item_from_raw_config()
+        return int(item['NumOfSecCheck']['N'])
 
     def get_num_of_sec_wait(self):
-        # TODO: validation
-        return 5
+        item = self.get_item_from_raw_config()
+        return int(item['NumOfSecWait']['N'])
 
     def get_num_of_attempts(self):
-        # TODO: validation
-        return 4
+        item = self.get_item_from_raw_config()
+        return int(item['NumOfAttempts']['N'])
+
+    def get_item_from_raw_config(self):
+        raw_config = self._raw_config
+        return raw_config['Item']

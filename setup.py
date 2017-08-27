@@ -19,8 +19,9 @@ setup(
     ],
     packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=[
-        'click==6.7',
         'boto3==1.4.6',
+        'click==6.7',
+        'python-daemon==2.1.2',
     ],
     scripts=[
         'aws_watchdogd',
