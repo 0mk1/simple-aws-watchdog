@@ -16,17 +16,18 @@ logger = logging.getLogger(__name__)
 def aws_watchdog(config_id):
     """AWS watchdog function. Health check for your services."""
 
-    notification_module = SNS(
-        'arn:aws:sns:us-west-2:632826021673:mkamycki-watchdog-topic'
-    )
+    # TODO: sns topic arn
+    notification_module = SNS()
 
-    config = DynamoDBConfig('mkamycki-watchdog-table', config_id)
+    # TODO: dynamodb table
+    config = DynamoDBConfig('', config_id)
     start_time = datetime.now()
 
     while True:
         if (datetime.now() - start_time) >= timedelta(minutes=15):
             # reloading config
-            config = DynamoDBConfig('mkamycki-watchdog-table', config_id)
+            # TODO: dynamodb table
+            config = DynamoDBConfig('', config_id)
             start_time = datetime.now()
 
         for service in config.list_of_services:
